@@ -2,23 +2,23 @@
 # Programmgeruest zu IAS, Versuch 3, Aufgabe 4)
 import numpy as np
 import pandas as pd
-from time import clock
+from time import time
 from random import randint
 from V3A3_MLP3Classifier import *
 from V2A2_Regression import *
 
 # (i) Define and construct MLP
 print("\n(I) Define and construct MLP:")
-M=1                    # number of hidden units
+M=3                    # number of hidden units
 flagsBiasUnits=1       # bias units in input layer and hidden layer?
 lmbda=0                # regularization coefficient
-eta0=1.0               # initial learning rate
+eta0=0.01               # initial learning rate
 eta_fade=1./5          # fading factor for decreasing learning rate (e.g., 1/50 means after 50 epochs is learning rate half the initial value...)
-maxEpochs=30           # max. number of learning epochs
+maxEpochs=50           # max. number of learning epochs
 nTrials = 1            # number of learning trials
 eps = 1e-4             # stop learning if (normalized) error function becomes smaller than eps
 debug = 1              # if >0 then debug mode: 1 = print Error, mean weight; 2=additionally check gradients; 3=additionally print weights
-flagScaleData = 0      # if >0 then scale data vectors in X
+flagScaleData = 1      # if >0 then scale data vectors in X
 mlp = MLP3Classifier(M,flagsBiasUnits,lmbda,eta0,eta_fade,maxEpochs,nTrials,eps,debug)
 
 # (ii) Load data and preprocessing
@@ -42,9 +42,9 @@ print("T[0..9]=\n",T[0:10])
 
 # (II) Test MLP with S-fold cross validation
 S=3
-t1=clock()                            # start time
+t1=time()                            # start time
 pE,pCE = mlp.crossvalidate(S,X,T)     # do S-fold cross validation for data X,T
-t2=clock()                            # end time
+t2=time()                            # end time
 time_comp=t2-t1                       # computing time in seconds
 print("\nS=",S," fold cross validation using the MLP yields the following results:")
 print("Classification error probability = ", pE)

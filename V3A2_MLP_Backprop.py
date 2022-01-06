@@ -26,11 +26,12 @@ def forwardPropagateActivity(x,W1,W2,flagBiasUnit=1):
     :returns z_1: Firing rates of the neurons in the hidden layer (=layer 1)
     :returns z_2: Firing rates of the neurons in the output layer (=layer 2); it is z2=y:=output activity 
     """    
-    a_1 = None                                  # REPLACE DUMMY CODE: compute dendritic potentials of hidden layer a_1
-    z_1 = np.zeros(len(W1))                     # REPLACE DUMMY CODE: compute activity z_1 of hidden layer 1 
-    if flagBiasUnit>0: z_1=np.append(z_1,[1.0]) # add bias unit (with constant activity 1) to hidden layer ?
-    a_2 = None                                  # REPLACE DUMMY CODE: compute dendritic potentials of output layer a_2 
-    z_2 = np.zeros(len(W2))+1e-5                # REPLACE DUMMY CODE: compute softmax activations for output layer 
+    a_1 = np.dot(W1,x)                          # REPLACE DUMMY CODE: compute dendritic potentials of hidden layer a_1
+    z_1 = np.tanh(a_1)                          # REPLACE DUMMY CODE: compute activity z_1 of hidden layer 1 
+    #if flagBiasUnit>0: z_1=np.append(z_1,[1.0]) # add bias unit (with constant activity 1) to hidden layer ?
+    #a_2 = np.dot(W2,z_1)                        # REPLACE DUMMY CODE: compute dendritic potentials of output layer a_2 
+    a_2 = np.dot(W2,np.append(z_1,[flagBiasUnit]))
+    z_2 = softmax(a_2)                          # REPLACE DUMMY CODE: compute softmax activations for output layer 
     return z_1, z_2;                            # return activities in layers 1 and 2; z_2 corresponds to outputs y
 
 def backPropagateErrors(z_1,z_2,t,W1,W2,flagBiasUnit=1): # backpropagate error signals delta_L
@@ -45,12 +46,13 @@ def backPropagateErrors(z_1,z_2,t,W1,W2,flagBiasUnit=1): # backpropagate error s
     :returns delta_1: Error signals for (hidden) layer 1
     :returns delta_2: Error signals for (output) layer 2
     """
+
     y=z_2                                     # layer 2 is output layer
-    delta_2=np.zeros(len(W2))                 # REPLACE DUMMY CODE: Initializing error signals in output layer 2  
-    alpha_1=None                              # REPLACE DUMMY CODE: compute error potentials in hidden layer 1 by backpropagating errors delta_2
-    h_prime=None                              # REPLACE DUMMY CODE: factor (1-z_1.*z_1) is h'(a) for tanh sigmoid function 
-    delta_1=np.zeros(len(W1))                 # REPLACE DUMMY CODE: compute error signals in hidden layer 1
-    if flagBiasUnit>0: delta_1 = delta_1[:-1] # remove last error signal corresponding to the bias unit ?  
+    delta_2=y-t                             # REPLACE DUMMY CODE: Initializing error signals in output layer 2  
+    alpha_1=np.dot(W2.T,delta_2)[:-1]                              # REPLACE DUMMY CODE: compute error potentials in hidden layer 1 by backpropagating errors delta_2
+    h_prime=(1.0-np.multiply(z_1,z_1))                              # REPLACE DUMMY CODE: factor (1-z_1.*z_1) is h'(a) for tanh sigmoid function 
+    delta_1=np.multiply(h_prime,alpha_1)                 # REPLACE DUMMY CODE: compute error signals in hidden layer 1
+    #if flagBiasUnit>0: delta_1 = delta_1[:-1] # remove last error signal corresponding to the bias unit ?  
     return delta_1, delta_2                   # return error signals for each layer
 
 def doLearningStep(W1,W2,xn,tn,eta,lmbda_by_N=0,flagBiasUnit=1): # do one backpropagation learning step...
@@ -67,10 +69,11 @@ def doLearningStep(W1,W2,xn,tn,eta,lmbda_by_N=0,flagBiasUnit=1): # do one backpr
     """
     z_1    ,z_2    =forwardPropagateActivity(xn,W1,W2,flagBiasUnit);    # forward propagation of activity according to input vector xn
     delta_1,delta_2=backPropagateErrors(z_1,z_2,tn,W1,W2,flagBiasUnit); # get error signals by backpropagation
-    nablaED_1 = None                             # REPLACE DUMMY CODE: gradient of data error function for first layer
-    nablaED_2 = None                             # REPLACE DUMMY CODE: gradient of data error function for second layer
-    W1=W1                                        # REPLACE DUMMY CODE: update weights for first layer with "weight decay" regularization
-    W2=W2                                        # REPLACE DUMMY CODE: update weights for second layer with "weight decay" regularization
+    nablaED_1 = np.outer(delta_1,xn)                             # REPLACE DUMMY CODE: gradient of data error function for first layer
+    #nablaED_2 = np.outer(delta_2,z_1)                            # REPLACE DUMMY CODE: gradient of data error function for second layer
+    nablaED_2 = np.outer(delta_2,np.append(z_1,[flagBiasUnit]))
+    W1=W1*(1.0-lmbda_by_N*eta)-eta*nablaED_1                                        # REPLACE DUMMY CODE: update weights for first layer with "weight decay" regularization
+    W2=W2*(1.0-lmbda_by_N*eta)-eta*nablaED_2                                        # REPLACE DUMMY CODE: update weights for second layer with "weight decay" regularization
     return W1,W2                                 # return new weights
 
 def getError(W1,W2,X,T,lmbda=0,flagBiasUnit=1): # compute total crossentropy error function over whole data set (X,T) for MLP with weight layers W1,W2
@@ -149,15 +152,15 @@ if __name__ == '__main__':
     print("T=",T)
 
     # (ii) Train MLP
-    M=1                                # number of hidden units
+    M=3                                # number of hidden units
     flagBiasUnit=1                     # add an extra bias unit to hidden units?
     M_total=M                          # total number of hidden units...
     if flagBiasUnit>0: M_total=M+1     # ... including the bias unit?
-    eta=0.9                            # learning rate
-    lmbda=0                            # regularization coefficient
-    nEpochs=500                        # number of learning epochs
+    eta=0.01                            # learning rate
+    lmbda=0                           # regularization coefficient
+    nEpochs=250                        # number of learning epochs
     contlevels=[-1,0,1]                # plot contour levels (of log-odds-ratio)
-    epochs4plot=[-1,0,5,10,50,100,nEpochs-1] # learning epochs for which a plot will be made
+    epochs4plot=[0, nEpochs-1] # learning epochs for which a plot will be made
     gridX,gridY = np.meshgrid(np.arange(-3,5,0.1),np.arange(-3,3,0.1))  # mesh grid for plot
     W1=1.0*(np.random.rand(M,D)-0.5)       # initialize weights of layer 1 randomly 
     W2=1.0*(np.random.rand(K,M_total)-0.5) # initialize weights of layer 2 randomly

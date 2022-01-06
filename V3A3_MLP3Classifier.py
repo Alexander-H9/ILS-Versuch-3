@@ -48,7 +48,7 @@ class MLP3Classifier(Classifier):
         """
         # (i) set new parameters
         if(M             !=None): self.M              = M              # M=number of neuerons in the hidden layer  
-        if(flagBiasUnits !=None): self.flagBiasUnits = flagBiasUnits   # if flagBiasUnits>0 then add a bias unit to the input and hidden layer 
+        if(flagBiasUnits !=None): self.flagBiasUnits  = flagBiasUnits  # if flagBiasUnits>0 then add a bias unit to the input and hidden layer 
         if(lmbda         !=None): self.lmbda          = lmbda          # regularization to avoid overfitting?   
         if(eta0          !=None): self.eta0           = eta0           # initial learning rate 
         if(eta_fade      !=None): self.eta_fade       = eta_fade       # temporal fading of learning: eta = eta0/(1+eta_fade*epoch)
@@ -185,7 +185,7 @@ class MLP3Classifier(Classifier):
 
 if __name__ == '__main__':
     # (i) create training data
-    flagDataset1=1          # set this flag to switch between dataset 1 (flag=1) and dataset 2 (flag=2)
+    flagDataset1=0          # set this flag to switch between dataset 1 (flag=1) and dataset 2 (flag=2)
     if flagDataset1>0:
         # data set 1
         X1 = np.array([[-2.,-1], [-2,2], [-1.5,1], [0,2], [2,1], [3,0], [4,-1], [4,2]])  # set 1: class 1 data
@@ -206,15 +206,15 @@ if __name__ == '__main__':
     # (ii) Define and train MLP
     print("\n(ii) Training MLP:")
     if flagDataset1>0:
-        M=1                            # number of hidden units
-        eta0=1.0                       # initial learning rate
-        eta_fade=1.0/5                 # fading factor for decreasing learning rate (e.g., 1/50 means after 50 epochs is learning rate half the initial value...)
-        maxEpochs=10                   # number of learning epochs
+        M=3                            # number of hidden units
+        eta0=0.1                       # initial learning rate
+        eta_fade=1.0/10                 # fading factor for decreasing learning rate (e.g., 1/50 means after 50 epochs is learning rate half the initial value...)
+        maxEpochs=50                   # number of learning epochs
     else:
-        M=1                            # number of hidden units
-        eta0=1.0                       # initial learning rate
-        eta_fade=1.0/5                 # fading factor for decreasing learning rate (e.g., 1/50 means after 50 epochs is learning rate half the initial value...)
-        maxEpochs=10                   # number of learning epochs
+        M=6                            # number of hidden units
+        eta0=0.1                    # initial learning rate
+        eta_fade=1.0/15                 # fading factor for decreasing learning rate (e.g., 1/50 means after 50 epochs is learning rate half the initial value...)
+        maxEpochs=1200                   # number of learning epochs
     flagBiasUnits=1                    # bias units in input layer and hidden layers?
     lmbda=0                            # regularization coefficient
     nTrials = 1                        # number of learning trials
